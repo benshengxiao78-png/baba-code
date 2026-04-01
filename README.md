@@ -1,7 +1,7 @@
 # Baba Code v1.0
-献给壮壮、老朱、易睿和大卫。
+献给壮壮、老朱、易睿、大卫、吴奕凡和其他朋友们。
 
-`Baba Code` 是一个献给粑粑群兄弟们的编程助手，申请免费的Gemini api即可开始使用(详见`aistudio.google.com`中的`get api key`部分)
+`Baba Code` 是一个献给粑粑群兄弟们的编程助手，申请免费的`Gemini api`即可开始使用(详见`aistudio.google.com`中的`get api key`部分)
 
 ## 命令名
 
