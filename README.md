@@ -54,12 +54,13 @@ baba code
 ## 启动方式
 
 ```bash
-cd /Users/xiaobensheng/claude-code/baba-code
 npm install
 npm start
 ```
 
-也可以直接：
+克隆仓库后，先进入项目目录再执行上面的命令。
+
+如果你已经通过 `npm link` 安装了全局命令，也可以直接：
 
 ```bash
 baba-code
