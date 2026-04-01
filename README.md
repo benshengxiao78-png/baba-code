@@ -2,7 +2,7 @@
 
 `Baba Code` 是一个从当前 Claude Code 源码快照思路里拆出来的 Ink 终端原型，目标不是 1:1 复刻上游，而是先做一个可运行、可观察、可继续迭代的本地 CLI 骨架。
 
-当前目录名和 `package.json` 里的包名仍然是 `repro-cli`，但这套原型在交互层和欢迎页上已经按 `Baba Code v1.0` 展示。
+当前目录名已经是 `baba-code`，`package.json` 里的包名也是更适合发布的 `baba-code`。
 
 ## 当前定位
 
@@ -38,7 +38,7 @@
 ## 启动方式
 
 ```bash
-cd /Users/xiaobensheng/claude-code/repro-cli
+cd /Users/xiaobensheng/claude-code/baba-code
 npm install
 npm start
 ```
