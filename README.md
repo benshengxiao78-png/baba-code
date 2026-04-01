@@ -1,8 +1,7 @@
 # Baba Code v1.0
+献给壮壮、老朱、易睿和大卫。
 
-`Baba Code` 是一个从当前 Claude Code 源码快照思路里拆出来的 Ink 终端原型，目标不是 1:1 复刻上游，而是先做一个可运行、可观察、可继续迭代的本地 CLI 骨架。
-
-当前目录名已经是 `baba-code`，`package.json` 里的包名也是更适合发布的 `baba-code`。
+`Baba Code` 是一个献给粑粑群兄弟们的编程助手，申请免费的Gemini api即可开始使用(详见`aistudio.google.com`中的`get api key`部分)
 
 ## 命令名
 
@@ -44,36 +43,23 @@ baba-code
 - `src/tools/`: 当前内置 `bash` 和 `read_file`
 
 ## 启动方式
+克隆仓库后，先进入项目目录，然后执行以下命令：
 
 ```bash
 npm install
 npm start
 ```
 
-克隆仓库后，先进入项目目录再执行上面的命令。
-
 如果你已经通过 `npm link` 安装了全局命令，也可以直接：
 
 ```bash
 baba-code
 ```
-
-
-## Gemini 配置
-
-最小配置：
-
+当对话需要使用 Gemini 模型时，需先配置 GEMINI_API_KEY。
+配置方式：
 ```bash
 export GEMINI_API_KEY=your_api_key
 ```
-
-当前默认 provider 是 `gemini`。
-
-如果没有设置 `GEMINI_API_KEY`，启动后会直接给出提示。这时可以：
-
-- 配置 `GEMINI_API_KEY`
-- 或执行 `/provider mock` 切回本地演示 provider
-
 ## 当前支持的命令
 
 - `/help`
@@ -101,26 +87,16 @@ export GEMINI_API_KEY=your_api_key
 
 - 基本交互和常规使用已经可以正常工作
 - 为了优先保证稳定性，`Apple Terminal` 下会关闭一部分更激进的输入光标/渲染能力
-- 如果你特别在意中文 IME 的内联预编辑显示效果，`VS Code Terminal`、`iTerm2`、`Ghostty` 和 `Kitty` 仍然会更稳一些
+- 如果你特别在意中文 IME 的内联预编辑显示效果，更推荐使用`VS Code Terminal`、`iTerm2`、`Ghostty` 和 `Kitty` 。
 
 如果你的目标是日常使用，`Apple Terminal` 现在已经可用；如果你的目标是做更稳定的中文输入和界面对比测试，优先使用上面这些终端会更合适。
 
-## 为什么单独建目录
-
-当前仓库是 Claude Code 源码快照，不带完整构建配置。直接在快照上补到“可直接跑完整产品”成本很高，也容易误判。
-
-这个目录采用的是更稳妥的路线：
-
-1. 先重建最小可运行骨架
-2. 先把会话循环、UI、命令和 tool 调度跑通
-3. 再逐步补齐更接近 Claude Code 的能力
 
 ## 下一步可继续补的点
 
 - 增加文件编辑而不是只读
 - 增加更细的权限策略
 - 增加更完整的 tool 调度和错误恢复
-- 增加更接近 Claude Code 的状态栏和布局层次
 - 继续打磨 `Baba Code` 欢迎页和品牌化界面
 
 ## License
