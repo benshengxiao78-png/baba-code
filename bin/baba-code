@@ -1,0 +1,6 @@
+#!/bin/zsh
+
+SCRIPT_DIR=${0:A:h}
+PROJECT_DIR=${SCRIPT_DIR:h}
+
+exec node "${PROJECT_DIR}/src/main.mjs" "$@"
