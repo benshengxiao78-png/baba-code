@@ -95,15 +95,15 @@ export GEMINI_API_KEY=your_api_key
 - Ghostty
 - Kitty
 
-`Apple Terminal` 在 macOS 下的兼容性明显更差，尤其是中文输入、IME 预编辑文本和中英切换这条链路。
+`Apple Terminal` 在 macOS 下的中文输入和 IME 兼容性原本更差，尤其是中英切换、预编辑文本和输入光标这条链路。当前项目已经加入了 `Apple Terminal` 专用降级，用来规避之前的渲染异常和直接退出问题。
 
-当前已做了一些 Apple Terminal 专用降级，但仍然可能遇到这些问题：
+目前的实际状态是：
 
-- 中文不会稳定地内联显示在输入框里
-- 中英切换或空格输入时更容易触发异常
-- `Terminal.app` 自己出现渲染错误甚至直接退出
+- 基本交互和常规使用已经可以正常工作
+- 为了优先保证稳定性，`Apple Terminal` 下会关闭一部分更激进的输入光标/渲染能力
+- 如果你特别在意中文 IME 的内联预编辑显示效果，`VS Code Terminal`、`iTerm2`、`Ghostty` 和 `Kitty` 仍然会更稳一些
 
-如果你要做稳定交互验证，优先使用上面这些终端。当前项目的主推荐环境是 `VS Code Terminal`、`iTerm2`、`Ghostty` 或 `Kitty`，不建议把 `Apple Terminal` 作为主要运行环境。
+如果你的目标是日常使用，`Apple Terminal` 现在已经可用；如果你的目标是做更稳定的中文输入和界面对比测试，优先使用上面这些终端会更合适。
 
 ## 为什么单独建目录
 
