@@ -4,6 +4,22 @@
 
 当前目录名已经是 `baba-code`，`package.json` 里的包名也是更适合发布的 `baba-code`。
 
+## 命令名
+
+推荐直接使用：
+
+```bash
+baba-code
+```
+
+当前本地 shell 里也保留了一个兼容入口：
+
+```bash
+baba code
+```
+
+但这只是为了兼容你本机已有的 zsh 启动函数。对外文档、GitHub 展示和后续发布，都建议统一使用 `baba-code`。
+
 ## 当前定位
 
 - 基于 `Ink + React` 的终端交互原型
@@ -46,7 +62,7 @@ npm start
 也可以直接：
 
 ```bash
-node src/main.mjs
+baba-code
 ```
 
 ## Welcome 预览
@@ -54,7 +70,7 @@ node src/main.mjs
 如果只想看 `Baba Code` 欢迎页和 mascot 布局，不进入完整交互：
 
 ```bash
-node src/main.mjs --preview-welcome
+baba-code --preview-welcome
 ```
 
 ## Gemini 配置

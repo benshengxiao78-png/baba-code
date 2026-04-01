@@ -100,8 +100,8 @@ export function createCliApp() {
 
   async function run(argv) {
     if (argv.includes('--help')) {
-      output.write('Usage: node src/main.mjs\n');
-      output.write('Starts an Ink-based Claude Code style reproduction shell.\n');
+      output.write('Usage: baba-code\n');
+      output.write('Starts the Baba Code Ink CLI shell.\n');
       output.write('Use --preview-welcome to print the startup welcome UI.\n');
       return;
     }
