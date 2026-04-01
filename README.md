@@ -12,14 +12,6 @@
 baba-code
 ```
 
-当前本地 shell 里也保留了一个兼容入口：
-
-```bash
-baba code
-```
-
-但这只是为了兼容你本机已有的 zsh 启动函数。对外文档、GitHub 展示和后续发布，都建议统一使用 `baba-code`。
-
 ## 当前定位
 
 - 基于 `Ink + React` 的终端交互原型
@@ -66,13 +58,6 @@ npm start
 baba-code
 ```
 
-## Welcome 预览
-
-如果只想看 `Baba Code` 欢迎页和 mascot 布局，不进入完整交互：
-
-```bash
-baba-code --preview-welcome
-```
 
 ## Gemini 配置
 
@@ -80,13 +65,6 @@ baba-code --preview-welcome
 
 ```bash
 export GEMINI_API_KEY=your_api_key
-```
-
-可选配置：
-
-```bash
-export REPRO_PROVIDER=gemini
-export GEMINI_MODEL=gemini-2.5-flash
 ```
 
 当前默认 provider 是 `gemini`。
@@ -117,7 +95,15 @@ export GEMINI_MODEL=gemini-2.5-flash
 - Ghostty
 - Kitty
 
-`Apple Terminal` 下的中文输入和 IME 兼容性明显更差，实际测试里也更容易出现渲染或退出问题。要做稳定交互验证，优先用上面这些终端。
+`Apple Terminal` 在 macOS 下的兼容性明显更差，尤其是中文输入、IME 预编辑文本和中英切换这条链路。
+
+当前已做了一些 Apple Terminal 专用降级，但仍然可能遇到这些问题：
+
+- 中文不会稳定地内联显示在输入框里
+- 中英切换或空格输入时更容易触发异常
+- `Terminal.app` 自己出现渲染错误甚至直接退出
+
+如果你要做稳定交互验证，优先使用上面这些终端。当前项目的主推荐环境是 `VS Code Terminal`、`iTerm2`、`Ghostty` 或 `Kitty`，不建议把 `Apple Terminal` 作为主要运行环境。
 
 ## 为什么单独建目录
 

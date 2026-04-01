@@ -4,12 +4,17 @@ import { TextInput } from '../components/TextInput.mjs';
 import { createRuntime } from '../core/runtime.mjs';
 
 const h = React.createElement;
-const CLAUDE_ORANGE = '#e87722';
-const CLAUDE_ORANGE_SOFT = '#d68438';
-const BABA_BROWN = '#9a622f';
-const BABA_BROWN_SOFT = '#b9783a';
+
+// Claude Code 标志性的颜色调色板
+const CLAUDE_ORANGE = '#D97757';
+const CLAUDE_ORANGE_SOFT = '#E29A81';
+const BABA_BROWN = '#8B5A2B';
+const BABA_BROWN_SOFT = '#A06B3E';
+const TEXT_MUTED = '#878787';
+
 const MAX_RENDERED_MESSAGES = 10;
 const MAX_RENDERED_LINES = 8;
+
 function roleColor(role) {
   switch (role) {
     case 'user':
@@ -19,7 +24,7 @@ function roleColor(role) {
     case 'tool':
       return 'yellow';
     case 'system':
-      return 'gray';
+      return TEXT_MUTED;
     default:
       return undefined;
   }
@@ -28,13 +33,13 @@ function roleColor(role) {
 function roleLabel(role) {
   switch (role) {
     case 'user':
-      return 'You';
+      return '○ You';
     case 'assistant':
-      return 'Claude';
+      return '❖ Baba';
     case 'tool':
-      return 'Tool';
+      return '⚒ Tool';
     case 'system':
-      return 'System';
+      return '⚙ System';
     default:
       return role;
   }
@@ -56,28 +61,33 @@ function createSegment(text, props = {}) {
   return { text, props };
 }
 
+// 经过严格数学计算的粑粑，保证 100% 左右绝对对称
 function getHeroLines(columns) {
   if (columns < 72) {
+    // 窄版：总宽度严格为 17 个字符，中心点在第 9 个字符（Index 8）
     return [
-      [createSegment('      ▄██▄      ', { color: BABA_BROWN_SOFT })],
-      [createSegment('    ▄██████▄    ', { color: BABA_BROWN })],
-      [createSegment('  ▄██████████▄  ', { color: BABA_BROWN_SOFT })],
-      [createSegment('█████◉██◉█████', { color: BABA_BROWN })],
-      [createSegment('██████▂▂██████', { color: BABA_BROWN_SOFT })],
-      [createSegment(' ▀██████████▀ ', { color: BABA_BROWN })],
-      [createSegment('   ▀██████▀   ', { color: BABA_BROWN_SOFT })],
+      [createSegment('        ▄        ', { color: BABA_BROWN_SOFT })],
+      [createSegment('      ▄███▄      ', { color: BABA_BROWN })],
+      [createSegment('    ▄███████▄    ', { color: BABA_BROWN_SOFT })],
+      [createSegment('   ▄█████████▄   ', { color: BABA_BROWN })],
+      [createSegment('  ▄██◉█████◉██▄  ', { color: BABA_BROWN_SOFT })], // 眼睛位于对称点
+      [createSegment(' ▄█████ ◡ █████▄ ', { color: BABA_BROWN })],      // 嘴巴位于绝对中心点
+      [createSegment(' ███████████████ ', { color: BABA_BROWN_SOFT })],
+      [createSegment('  ▀▀▀▀▀▀▀▀▀▀▀▀▀  ', { color: BABA_BROWN })],
     ];
   }
 
+  // 宽版：总宽度严格为 21 个字符，中心点在第 11 个字符（Index 10）
   return [
-    [createSegment('       ▄██▄       ', { color: BABA_BROWN_SOFT })],
-    [createSegment('     ▄██████▄     ', { color: BABA_BROWN })],
-    [createSegment('   ▄██████████▄   ', { color: BABA_BROWN_SOFT })],
-    [createSegment(' ▄██████████████▄ ', { color: BABA_BROWN })],
-    [createSegment('██████◉████◉██████', { color: BABA_BROWN_SOFT })],
-    [createSegment('████████▂▂████████', { color: BABA_BROWN })],
-    [createSegment(' ▀██████████████▀ ', { color: BABA_BROWN_SOFT })],
-    [createSegment('   ▀██████████▀   ', { color: BABA_BROWN })],
+    [createSegment('          ▄          ', { color: BABA_BROWN_SOFT })],
+    [createSegment('        ▄███▄        ', { color: BABA_BROWN })],
+    [createSegment('      ▄███████▄      ', { color: BABA_BROWN_SOFT })],
+    [createSegment('    ▄███████████▄    ', { color: BABA_BROWN })],
+    [createSegment('   ▄█████████████▄   ', { color: BABA_BROWN_SOFT })],
+    [createSegment('  ▄███◉███████◉███▄  ', { color: BABA_BROWN })],
+    [createSegment(' ▄███████ ◡ ███████▄ ', { color: BABA_BROWN_SOFT })],
+    [createSegment(' ███████████████████ ', { color: BABA_BROWN })],
+    [createSegment('  ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀  ', { color: BABA_BROWN_SOFT })],
   ];
 }
 
@@ -85,16 +95,27 @@ function getBabaLogoLines(columns) {
   if (columns < 72) {
     return [
       [createSegment('Baba Code', { color: CLAUDE_ORANGE, bold: true })],
-      [createSegment('v1.0', { dimColor: true })],
-      [createSegment('tiny terminal mascot', { dimColor: true })],
+      [createSegment('tiny terminal mascot', { color: TEXT_MUTED })],
     ];
   }
-
   return null;
 }
 
 function renderSegment(segment, index) {
   return h(Text, { key: `segment-${index}`, ...segment.props }, segment.text);
+}
+
+function formatMessageTime(timestamp) {
+  const date = new Date(timestamp);
+  if (Number.isNaN(date.getTime())) {
+    return String(timestamp);
+  }
+
+  return new Intl.DateTimeFormat(undefined, {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  }).format(date);
 }
 
 export function WelcomeScreen({ provider, model, cwd, columns }) {
@@ -106,10 +127,7 @@ export function WelcomeScreen({ provider, model, cwd, columns }) {
     Box,
     {
       flexDirection: 'column',
-      borderStyle: 'round',
-      borderColor: CLAUDE_ORANGE,
-      paddingX: 1,
-      paddingY: 0,
+      paddingY: 1,
       marginBottom: 1,
     },
     h(
@@ -118,20 +136,20 @@ export function WelcomeScreen({ provider, model, cwd, columns }) {
       h(
         Text,
         null,
-        h(Text, { color: CLAUDE_ORANGE, bold: true }, 'Welcome to Claude Code'),
-        h(Text, { dimColor: true }, ' v0.1.0'),
+        h(Text, { color: CLAUDE_ORANGE, bold: true }, '❖ Baba Code '),
+        h(Text, { color: TEXT_MUTED }, 'v1.0.0'),
       ),
-      h(Text, { dimColor: true }, 'Ink-based local reproduction prototype'),
-      h(Text, { dimColor: true }, `Provider: ${provider}`),
-      h(Text, { dimColor: true }, `Model: ${model}`),
-      h(Text, { dimColor: true }, cwd),
+      h(Text, { color: TEXT_MUTED }, `Provider: ${provider} · Model: ${model}`),
+      h(Text, { color: TEXT_MUTED }, cwd),
+      
       h(
         Box,
         {
           flexDirection: wideLayout ? 'row' : 'column',
           alignItems: 'center',
-          marginTop: 1,
-          gap: wideLayout ? 6 : 1,
+          marginTop: 2,
+          marginBottom: 1,
+          gap: wideLayout ? 4 : 1,
         },
         h(
           Box,
@@ -151,16 +169,19 @@ export function WelcomeScreen({ provider, model, cwd, columns }) {
             ? h(
                 Box,
                 {
-                  borderStyle: 'round',
-                  borderColor: CLAUDE_ORANGE,
                   flexDirection: 'column',
-                  paddingX: 1,
+                  paddingLeft: 2,
+                  borderStyle: 'single',
+                  borderTop: false,
+                  borderRight: false,
+                  borderBottom: false,
+                  borderColor: CLAUDE_ORANGE_SOFT,
                 },
                 h(Text, { color: CLAUDE_ORANGE, bold: true }, 'Baba Code'),
-                h(Text, { dimColor: true }, 'v1.0'),
-                h(Text, { dimColor: true }, 'tiny mascot'),
+                h(Text, { color: TEXT_MUTED }, 'The perfectly symmetrical'), // 更新标语
+                h(Text, { color: TEXT_MUTED }, 'terminal mascot'),
               )
-            : logoLines.map((line, index) =>
+            : logoLines?.map((line, index) =>
                 h(
                   Box,
                   { key: `logo-${index}` },
@@ -180,14 +201,22 @@ function MessageBlock({ message }) {
     Box,
     { flexDirection: 'column', marginBottom: 1 },
     h(
-      Text,
-      null,
+      Box,
+      { marginBottom: 0 },
       h(Text, { color: roleColor(message.role), bold: true }, `${roleLabel(message.role)} `),
-      h(Text, { dimColor: true }, message.timestamp),
+      h(Text, { color: TEXT_MUTED }, formatMessageTime(message.timestamp)),
     ),
-    ...lines.map((line, index) =>
-      h(Text, { key: `${message.id}-${index}` }, line),
-    ),
+    h(
+      Box,
+      { paddingLeft: 2 },
+      h(
+        Box,
+        { flexDirection: 'column' },
+        ...lines.map((line, index) =>
+          h(Text, { key: `${message.id}-${index}` }, line),
+        )
+      )
+    )
   );
 }
 
@@ -195,7 +224,7 @@ function MessagesPane({ messages }) {
   const visibleMessages = messages.slice(-MAX_RENDERED_MESSAGES);
 
   if (visibleMessages.length === 0) {
-    return h(Text, { dimColor: true }, 'No messages yet. Try /help.');
+    return h(Box, { paddingLeft: 2, marginBottom: 1 }, h(Text, { color: TEXT_MUTED }, 'No messages yet. Try /help.'));
   }
 
   return h(
@@ -217,11 +246,11 @@ function ApprovalPane({ prompt }) {
       paddingX: 1,
       marginBottom: 1,
     },
-    h(Text, { color: 'yellow', bold: true }, 'Permission request'),
+    h(Text, { color: 'yellow', bold: true }, '⚠ Permission request'),
     h(Text, null, prompt),
     h(
       Text,
-      { dimColor: true },
+      { color: TEXT_MUTED },
       'Press y to approve, n or Esc to deny.',
     ),
   );
@@ -260,11 +289,9 @@ function PromptPane({
   busy,
   approvalActive,
 }) {
-  const label = approvalActive
-    ? 'approval'
-    : busy
-      ? 'working'
-      : 'prompt';
+  const isWait = approvalActive || busy;
+  const promptSymbol = isWait ? '◷' : '❯';
+  const promptColor = approvalActive ? 'yellow' : (busy ? TEXT_MUTED : CLAUDE_ORANGE);
 
   const helperText = approvalActive
     ? 'Waiting for permission response...'
@@ -276,14 +303,12 @@ function PromptPane({
     Box,
     {
       flexDirection: 'column',
-      borderStyle: 'round',
-      borderColor: approvalActive ? 'yellow' : CLAUDE_ORANGE,
-      paddingX: 1,
+      paddingTop: 1,
     },
     h(
       Box,
       { flexDirection: 'row' },
-      h(Text, { color: approvalActive ? 'yellow' : CLAUDE_ORANGE, bold: true }, `${label}> `),
+      h(Text, { color: promptColor, bold: true }, `${promptSymbol} `),
       h(TextInput, {
         value: inputValue,
         onChange: onInputChange,
@@ -297,8 +322,11 @@ function PromptPane({
         showCursor: !approvalActive && !busy,
       }),
     ),
-    h(Text, { dimColor: true }, helperText),
-    h(Text, { dimColor: true }, 'Enter submit · Left/Right move · Ctrl+C exit'),
+    h(
+      Box,
+      { paddingLeft: 2, marginTop: 1 },
+      h(Text, { color: TEXT_MUTED }, helperText),
+    )
   );
 }
 
@@ -430,7 +458,7 @@ export function InkApp() {
 
   return h(
     Box,
-    { flexDirection: 'column' },
+    { flexDirection: 'column', paddingX: 1, paddingY: 1 },
     h(WelcomeScreen, {
       provider: runtime.session.provider,
       model: runtime.session.model,
