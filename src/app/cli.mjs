@@ -5,21 +5,21 @@ import { render, renderToString } from 'ink';
 import { InkApp } from './InkApp.mjs';
 import { createRuntime } from '../core/runtime.mjs';
 import { WelcomeScreen } from './InkApp.mjs';
-import { getDefaultSessionConfig } from '../core/session.mjs';
+import { createSessionState, getActiveUserProfile } from '../core/session.mjs';
 
 const IS_APPLE_TERMINAL = process.env.TERM_PROGRAM === 'Apple_Terminal';
 const FORCE_APPLE_TERMINAL_FALLBACK = process.env.BABA_APPLE_TERMINAL_FALLBACK === '1';
 
 export function createCliApp() {
-  function renderWelcome(cwd = process.cwd()) {
-    const { provider, model } = getDefaultSessionConfig();
+  function renderWelcome(session = createSessionState()) {
+    const { provider, model } = session;
 
     return renderToString(
       React.createElement(WelcomeScreen, {
         provider,
         model,
-        cwd,
         columns: process.stdout.columns || 80,
+        activeUser: getActiveUserProfile(session),
       }),
     );
   }
@@ -41,7 +41,7 @@ export function createCliApp() {
     });
 
     try {
-      output.write(`${renderWelcome(runtime.session.cwd)}\n`);
+      output.write(`${renderWelcome(runtime.session)}\n`);
 
       if (runtime.session.startupWarnings.length > 0) {
         for (const warning of runtime.session.startupWarnings) {

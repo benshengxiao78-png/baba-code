@@ -1,104 +1,102 @@
-# Baba Code v1.0
+# Baba Code
+
 献给壮壮、老朱、易睿、大卫、吴奕凡和其他朋友们。
 
-`Baba Code` 是一个编程助手，申请免费的`Gemini api`即可开始使用(详见`aistudio.google.com`中的`get api key`部分)
+`Baba Code` 是一个受 Claude Code 工作流启发、基于 `Ink + React` 的本地终端编程助手原型。
 
-## 命令名
+## 1. Baba Code 简介
 
-推荐直接使用：
+- 支持 `gemini` 和 `mock` 两种 provider
+- 支持基础流式输出
+- 内置 `bash` 和 `read_file` 两个 tool
+- 内置 `/help`、`/provider`、`/model`、`/tools`、`/history`、`/buddy` 等命令
+- 适合做本地 CLI、UI 和 tool 调度实验
+
+## 2. API 配置
+
+默认 provider 是 `gemini`，使用前先配置 `GEMINI_API_KEY`，可在 `Google AI Studio` 的 `API keys` 页面获取。
+
+macOS / Linux:
 
 ```bash
-baba-code
+export GEMINI_API_KEY="your_api_key"
 ```
 
-## 当前定位
+Windows PowerShell:
 
-- 基于 `Ink + React` 的终端交互原型
-- 保留 Claude Code 风格的会话、命令、tool、审批回路
-- 支持本地 mock provider 和真实 Gemini provider
-- 适合继续做 UI 试验、命令回路验证和 tool 调度验证
+```powershell
+$env:GEMINI_API_KEY="your_api_key"
+```
 
-## 当前能力
+可选配置：
 
-- Ink 欢迎页、消息流和输入框
-- `/help`、`/models`、`/tools`、`/history` 等基础命令
-- `/provider [name]` 和 `/model [name]` 切换
-- 简单权限确认流
-- 本地可运行的 `bash` tool
-- 本地可运行的 `read_file` tool
-- Gemini API 的基础文本对话
-- 基础流式输出
-- 基础函数调用回路
+- `GEMINI_MODEL`: 默认模型，未设置时默认使用 `gemini-2.5-flash`
+- `REPRO_PROVIDER`: 启动时默认 provider，可选 `gemini` 或 `mock`
 
-## 目录说明
+如果只是本地体验界面和命令，可以启动后切到：
 
-- `src/main.mjs`: CLI 入口
-- `src/app/cli.mjs`: 启动分发，区分交互模式和预览模式
-- `src/app/InkApp.mjs`: Ink 根组件、欢迎页、消息流、输入和审批
-- `src/core/session.mjs`: provider/model/session 状态
-- `src/core/registry.mjs`: 命令和 tool 注册表
-- `src/core/runtime.mjs`: 统一调度运行时
-- `src/providers/geminiProvider.mjs`: Gemini provider
-- `src/providers/mockProvider.mjs`: 本地 mock provider
-- `src/tools/`: 当前内置 `bash` 和 `read_file`
+```text
+/provider mock
+```
 
-## 启动方式
-克隆仓库后，先进入项目目录，然后执行以下命令：
+## 3. 启动方式
+
+### macOS
 
 ```bash
+cd baba-code
 npm install
 npm start
 ```
 
-如果你已经通过 `npm link` 安装了全局命令，也可以直接：
+如果你想全局使用命令：
 
 ```bash
+npm link
 baba-code
 ```
-当对话需要使用 Gemini 模型时，需先配置 GEMINI_API_KEY。
-配置方式：
-```bash
-export GEMINI_API_KEY=your_api_key
+
+### Windows
+
+```powershell
+cd .\baba-code
+npm install
+npm start
 ```
-## 当前支持的命令
 
-- `/help`
-- `/models`
-- `/tools`
-- `/model [name]`
-- `/provider [name]`
-- `/history`
-- `/run <shell command>`
-- `/read <path>`
-- `/exit`
+如果你只想直接启动，也可以：
 
-## 终端兼容性
+```powershell
+node .\src\main.mjs
+```
 
-更推荐在这些终端里运行：
+注意：
 
-- VS Code Terminal
-- iTerm2
-- Ghostty
-- Kitty
+- Windows 下不建议直接依赖全局 `baba-code` 命令，因为当前 `bin/baba-code` 是 `zsh` 脚本
+- `/run` 命令当前通过 `/bin/zsh` 执行 shell，纯 Windows 环境下可能不可用；更稳妥的方式是使用 Git Bash、WSL，或暂时避免使用 `/run`
 
-`Apple Terminal` 在 macOS 下的中文输入和 IME 兼容性原本更差，尤其是中英切换、预编辑文本和输入光标这条链路。当前项目已经加入了 `Apple Terminal` 专用降级，用来规避之前的渲染异常和直接退出问题。
+## 4. 命令列表
 
-目前的实际状态是：
+- `/help`: 查看所有命令
+- `/tools`: 查看当前注册的 tools
+- `/history`: 查看当前会话历史
+- `/provider [name]`: 查看或切换 provider
+- `/models`: 查看当前 provider 可用模型，目前仅 `gemini` 支持
+- `/model [name]`: 查看或切换当前模型
+- `/buddy`: 查看 buddy 用法
+- `/buddy list`: 列出可选 buddy
+- `/buddy roster`: 查看当前用户和 buddy 分配
+- `/buddy use <user>`: 切换当前用户
+- `/buddy set <buddy-id>`: 给当前用户设置 buddy
+- `/buddy assign <user> <buddy-id>`: 给指定用户分配 buddy
+- `/run <shell command>`: 执行 shell 命令
+- `/read <path>`: 读取文本文件
+- `/exit`: 退出
 
-- 基本交互和常规使用已经可以正常工作
-- 为了优先保证稳定性，`Apple Terminal` 下会关闭一部分更激进的输入光标/渲染能力
-- 如果你特别在意中文 IME 的内联预编辑显示效果，更推荐使用`VS Code Terminal`、`iTerm2`、`Ghostty` 和 `Kitty` 。
+## 5. TODO List
 
-如果你的目标是日常使用，`Apple Terminal` 现在已经可用；如果你的目标是做更稳定的中文输入和界面对比测试，优先使用上面这些终端会更合适。
-
-
-## 下一步可继续补的点
-
-- 增加文件编辑而不是只读
+- 增加只读以外的文件编辑能力
 - 增加更细的权限策略
 - 增加更完整的 tool 调度和错误恢复
-- 继续打磨 `Baba Code` 欢迎页和品牌化界面
-
-## License
-
-MIT
+- 完善 Windows 兼容性，尤其是 `/run` 的执行环境
+- 增加用户系统、持久化和管理员能力

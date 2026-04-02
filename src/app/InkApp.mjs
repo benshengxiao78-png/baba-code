@@ -2,15 +2,20 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Box, Text, useApp, useInput, useStdout } from 'ink';
 import { TextInput } from '../components/TextInput.mjs';
 import { createRuntime } from '../core/runtime.mjs';
+import { getBuddyById } from '../core/buddies.mjs';
+import { getActiveUserProfile, getBuddyForUser } from '../core/session.mjs';
 
 const h = React.createElement;
 
 // Claude Code 标志性的颜色调色板
 const CLAUDE_ORANGE = '#D97757';
-const CLAUDE_ORANGE_SOFT = '#E29A81';
 const BABA_BROWN = '#8B5A2B';
 const BABA_BROWN_SOFT = '#A06B3E';
+const PROMPT_BORDER = '#999999';
 const TEXT_MUTED = '#878787';
+const BABA_VERSION_LABEL = 'v1.0.0';
+const BABA_TAGLINE = 'The Poop with Wisdom';
+const WELCOME_V2_WIDTH = 58;
 
 const MAX_RENDERED_MESSAGES = 10;
 const MAX_RENDERED_LINES = 8;
@@ -30,10 +35,10 @@ function roleColor(role) {
   }
 }
 
-function roleLabel(role) {
-  switch (role) {
+function messageLabel(message) {
+  switch (message.role) {
     case 'user':
-      return '○ You';
+      return `${getBuddyById(message.buddyId)?.sprite || '○'} ${message.userName || 'You'}`;
     case 'assistant':
       return '❖ Baba';
     case 'tool':
@@ -41,7 +46,7 @@ function roleLabel(role) {
     case 'system':
       return '⚙ System';
     default:
-      return role;
+      return message.role;
   }
 }
 
@@ -57,27 +62,37 @@ function clampMessage(content) {
   ];
 }
 
+function getMessageLines(message, expandLongMessages) {
+  const lines = String(message.content).split('\n');
+  if (expandLongMessages) {
+    return lines;
+  }
+
+  return clampMessage(message.content);
+}
+
 function createSegment(text, props = {}) {
   return { text, props };
 }
 
-// 经过严格数学计算的粑粑，保证 100% 左右绝对对称
+function getWelcomeDivider(width) {
+  return '…'.repeat(width);
+}
+
 function getHeroLines(columns) {
-  if (columns < 72) {
-    // 窄版：总宽度严格为 17 个字符，中心点在第 9 个字符（Index 8）
+  if (columns < 64) {
     return [
       [createSegment('        ▄        ', { color: BABA_BROWN_SOFT })],
       [createSegment('      ▄███▄      ', { color: BABA_BROWN })],
       [createSegment('    ▄███████▄    ', { color: BABA_BROWN_SOFT })],
       [createSegment('   ▄█████████▄   ', { color: BABA_BROWN })],
-      [createSegment('  ▄██◉█████◉██▄  ', { color: BABA_BROWN_SOFT })], // 眼睛位于对称点
-      [createSegment(' ▄█████ ◡ █████▄ ', { color: BABA_BROWN })],      // 嘴巴位于绝对中心点
+      [createSegment('  ▄██◉█████◉██▄  ', { color: BABA_BROWN_SOFT })],
+      [createSegment(' ▄█████ ◡ █████▄ ', { color: BABA_BROWN })],
       [createSegment(' ███████████████ ', { color: BABA_BROWN_SOFT })],
       [createSegment('  ▀▀▀▀▀▀▀▀▀▀▀▀▀  ', { color: BABA_BROWN })],
     ];
   }
 
-  // 宽版：总宽度严格为 21 个字符，中心点在第 11 个字符（Index 10）
   return [
     [createSegment('          ▄          ', { color: BABA_BROWN_SOFT })],
     [createSegment('        ▄███▄        ', { color: BABA_BROWN })],
@@ -89,16 +104,6 @@ function getHeroLines(columns) {
     [createSegment(' ███████████████████ ', { color: BABA_BROWN })],
     [createSegment('  ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀  ', { color: BABA_BROWN_SOFT })],
   ];
-}
-
-function getBabaLogoLines(columns) {
-  if (columns < 72) {
-    return [
-      [createSegment('Baba Code', { color: CLAUDE_ORANGE, bold: true })],
-      [createSegment('tiny terminal mascot', { color: TEXT_MUTED })],
-    ];
-  }
-  return null;
 }
 
 function renderSegment(segment, index) {
@@ -118,84 +123,64 @@ function formatMessageTime(timestamp) {
   }).format(date);
 }
 
-export function WelcomeScreen({ provider, model, cwd, columns }) {
+export function WelcomeScreen({ provider, model, columns, activeUser }) {
   const heroLines = getHeroLines(columns);
-  const logoLines = getBabaLogoLines(columns);
-  const wideLayout = columns >= 72;
+  const wideLayout = columns >= 64;
+  const activeBuddy = getBuddyForUser(activeUser);
 
   return h(
     Box,
     {
       flexDirection: 'column',
-      paddingY: 1,
       marginBottom: 1,
     },
     h(
+      Text,
+      null,
+      h(Text, { color: CLAUDE_ORANGE }, 'Welcome to Baba Code '),
+      h(Text, { dimColor: true }, BABA_VERSION_LABEL),
+    ),
+    h(Text, { dimColor: true }, getWelcomeDivider(WELCOME_V2_WIDTH)),
+    h(
       Box,
-      { flexDirection: 'column', alignItems: 'center' },
+      {
+        flexDirection: wideLayout ? 'row' : 'column',
+        alignItems: wideLayout ? 'center' : 'flex-start',
+        gap: wideLayout ? 3 : 1,
+        marginTop: 1,
+      },
       h(
-        Text,
-        null,
-        h(Text, { color: CLAUDE_ORANGE, bold: true }, '❖ Baba Code '),
-        h(Text, { color: TEXT_MUTED }, 'v1.0.0'),
+        Box,
+        { flexDirection: 'column', alignItems: 'flex-start' },
+        ...heroLines.map((line, index) =>
+          h(
+            Box,
+            { key: `hero-${index}` },
+            h(Text, null, ...line.map(renderSegment)),
+          ),
+        ),
       ),
-      h(Text, { color: TEXT_MUTED }, `Provider: ${provider} · Model: ${model}`),
-      h(Text, { color: TEXT_MUTED }, cwd),
-      
       h(
         Box,
         {
-          flexDirection: wideLayout ? 'row' : 'column',
-          alignItems: 'center',
-          marginTop: 2,
-          marginBottom: 1,
-          gap: wideLayout ? 4 : 1,
+          flexDirection: 'column',
+          alignItems: 'flex-start',
         },
+        h(Text, { color: BABA_BROWN_SOFT }, BABA_TAGLINE),
+        h(Text, { color: TEXT_MUTED }, `Provider: ${provider}`),
+        h(Text, { color: TEXT_MUTED }, `Model: ${model}`),
         h(
-          Box,
-          { flexDirection: 'column', alignItems: 'center' },
-          ...heroLines.map((line, index) =>
-            h(
-              Box,
-              { key: `hero-${index}` },
-              h(Text, null, ...line.map(renderSegment)),
-            ),
-          ),
-        ),
-        h(
-          Box,
-          { flexDirection: 'column', alignItems: wideLayout ? 'flex-start' : 'center' },
-          wideLayout
-            ? h(
-                Box,
-                {
-                  flexDirection: 'column',
-                  paddingLeft: 2,
-                  borderStyle: 'single',
-                  borderTop: false,
-                  borderRight: false,
-                  borderBottom: false,
-                  borderColor: CLAUDE_ORANGE_SOFT,
-                },
-                h(Text, { color: CLAUDE_ORANGE, bold: true }, 'Baba Code'),
-                h(Text, { color: TEXT_MUTED }, 'The perfectly symmetrical'), // 更新标语
-                h(Text, { color: TEXT_MUTED }, 'terminal mascot'),
-              )
-            : logoLines?.map((line, index) =>
-                h(
-                  Box,
-                  { key: `logo-${index}` },
-                  h(Text, null, ...line.map(renderSegment)),
-                ),
-              ),
+          Text,
+          { color: TEXT_MUTED },
+          `User: ${activeUser.name} · Buddy: ${activeBuddy.sprite} ${activeBuddy.name}`,
         ),
       ),
     ),
   );
 }
 
-function MessageBlock({ message }) {
-  const lines = clampMessage(message.content);
+function MessageBlock({ message, expandLongMessages }) {
+  const lines = getMessageLines(message, expandLongMessages);
 
   return h(
     Box,
@@ -203,7 +188,7 @@ function MessageBlock({ message }) {
     h(
       Box,
       { marginBottom: 0 },
-      h(Text, { color: roleColor(message.role), bold: true }, `${roleLabel(message.role)} `),
+      h(Text, { color: roleColor(message.role), bold: true }, `${messageLabel(message)} `),
       h(Text, { color: TEXT_MUTED }, formatMessageTime(message.timestamp)),
     ),
     h(
@@ -220,7 +205,7 @@ function MessageBlock({ message }) {
   );
 }
 
-function MessagesPane({ messages }) {
+function MessagesPane({ messages, expandLongMessages }) {
   const visibleMessages = messages.slice(-MAX_RENDERED_MESSAGES);
 
   if (visibleMessages.length === 0) {
@@ -231,7 +216,7 @@ function MessagesPane({ messages }) {
     Box,
     { flexDirection: 'column' },
     ...visibleMessages.map((message) =>
-      h(MessageBlock, { key: message.id, message }),
+      h(MessageBlock, { key: message.id, message, expandLongMessages }),
     ),
   );
 }
@@ -288,16 +273,21 @@ function PromptPane({
   onExitMessage,
   busy,
   approvalActive,
+  expandLongMessages,
 }) {
   const isWait = approvalActive || busy;
   const promptSymbol = isWait ? '◷' : '❯';
   const promptColor = approvalActive ? 'yellow' : (busy ? TEXT_MUTED : CLAUDE_ORANGE);
+  const borderColor = approvalActive ? 'yellow' : PROMPT_BORDER;
 
-  const helperText = approvalActive
+  const baseHelperText = approvalActive
     ? 'Waiting for permission response...'
     : busy
       ? 'Working...'
       : exitHint || 'Type a prompt or /help';
+  const helperText = approvalActive
+    ? baseHelperText
+    : `${baseHelperText} · Ctrl+L ${expandLongMessages ? 'collapse' : 'expand'} long messages`;
 
   return h(
     Box,
@@ -307,20 +297,34 @@ function PromptPane({
     },
     h(
       Box,
-      { flexDirection: 'row' },
+      {
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+        borderStyle: 'round',
+        borderColor,
+        borderLeft: false,
+        borderRight: false,
+        borderBottom: false,
+        width: '100%',
+        paddingX: 1,
+      },
       h(Text, { color: promptColor, bold: true }, `${promptSymbol} `),
-      h(TextInput, {
-        value: inputValue,
-        onChange: onInputChange,
-        onSubmit,
-        onExit,
-        onExitMessage,
-        focus: !approvalActive && !busy,
-        cursorOffset,
-        onCursorOffsetChange,
-        placeholder: 'Type a prompt or /help',
-        showCursor: !approvalActive && !busy,
-      }),
+      h(
+        Box,
+        { flexGrow: 1, flexShrink: 1 },
+        h(TextInput, {
+          value: inputValue,
+          onChange: onInputChange,
+          onSubmit,
+          onExit,
+          onExitMessage,
+          focus: !approvalActive && !busy,
+          cursorOffset,
+          onCursorOffsetChange,
+          placeholder: 'Type a prompt or /help',
+          showCursor: !approvalActive && !busy,
+        }),
+      ),
     ),
     h(
       Box,
@@ -338,6 +342,7 @@ export function InkApp() {
   const [approval, setApproval] = useState(null);
   const [busy, setBusy] = useState(false);
   const [exitMessage, setExitMessage] = useState('');
+  const [expandLongMessages, setExpandLongMessages] = useState(false);
   const [version, setVersion] = useState(0);
   const approvalRef = useRef(null);
   const inputValueRef = useRef('');
@@ -425,6 +430,12 @@ export function InkApp() {
     }
   }, { isActive: Boolean(approval) });
 
+  useInput((input, key) => {
+    if (key.ctrl && input === 'l') {
+      setExpandLongMessages((current) => !current);
+    }
+  }, { isActive: !approval });
+
   const handleExit = useCallback(() => {
     exit();
     setTimeout(() => {
@@ -456,14 +467,16 @@ export function InkApp() {
     };
   }, []);
 
+  const activeUser = getActiveUserProfile(runtime.session);
+
   return h(
     Box,
     { flexDirection: 'column', paddingX: 1, paddingY: 1 },
     h(WelcomeScreen, {
       provider: runtime.session.provider,
       model: runtime.session.model,
-      cwd: runtime.session.cwd,
       columns: stdout?.columns ?? 80,
+      activeUser,
     }),
     h(NoticePane, { warnings: runtime.session.startupWarnings }),
     approval
@@ -471,7 +484,10 @@ export function InkApp() {
           prompt: approval.prompt,
         })
       : null,
-    h(MessagesPane, { messages: runtime.session.messages }),
+    h(MessagesPane, {
+      messages: runtime.session.messages,
+      expandLongMessages,
+    }),
     h(PromptPane, {
       inputValue,
       onInputChange: updateInputValue,
@@ -483,6 +499,7 @@ export function InkApp() {
       onExitMessage: handleExitMessage,
       busy,
       approvalActive: Boolean(approval),
+      expandLongMessages,
     }),
   );
 }

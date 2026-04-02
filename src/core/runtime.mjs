@@ -1,6 +1,11 @@
 import { registerBuiltinCommands } from '../commands/index.mjs';
 import { createRegistry } from './registry.mjs';
-import { addMessage, createSessionState, formatHistory } from './session.mjs';
+import {
+  addMessage,
+  createSessionState,
+  formatHistory,
+  getActiveUserProfile,
+} from './session.mjs';
 import { getProvider } from '../providers/index.mjs';
 import { registerBuiltinTools } from '../tools/index.mjs';
 
@@ -106,7 +111,12 @@ export function createRuntime(options = {}) {
       return null;
     }
 
-    appendMessage('user', trimmed);
+    const activeUser = getActiveUserProfile(session);
+    appendMessage('user', trimmed, {
+      userId: activeUser.id,
+      userName: activeUser.name,
+      buddyId: activeUser.buddyId,
+    });
 
     if (trimmed.startsWith('/')) {
       const result = await handleCommand(trimmed);
