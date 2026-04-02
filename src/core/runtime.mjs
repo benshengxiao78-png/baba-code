@@ -1,4 +1,8 @@
 import { registerBuiltinCommands } from '../commands/index.mjs';
+import {
+  redactSensitiveText,
+  sanitizeToolArgs,
+} from './envMutations.mjs';
 import { createRegistry } from './registry.mjs';
 import {
   addMessage,
@@ -74,7 +78,7 @@ export function createRuntime(options = {}) {
 
         appendMessage('tool', `${name}: ${cancelled.summary}`, {
           toolName: name,
-          toolArgs: args,
+          toolArgs: sanitizeToolArgs(name, args),
           rejected: true,
         });
 
@@ -86,7 +90,7 @@ export function createRuntime(options = {}) {
 
     appendMessage('tool', `${name}: ${result.summary}`, {
       toolName: name,
-      toolArgs: args,
+      toolArgs: sanitizeToolArgs(name, args),
     });
 
     return result;
@@ -112,7 +116,7 @@ export function createRuntime(options = {}) {
     }
 
     const activeUser = getActiveUserProfile(session);
-    appendMessage('user', trimmed, {
+    appendMessage('user', redactSensitiveText(trimmed), {
       userId: activeUser.id,
       userName: activeUser.name,
       buddyId: activeUser.buddyId,

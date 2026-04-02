@@ -479,15 +479,15 @@ export function InkApp() {
       activeUser,
     }),
     h(NoticePane, { warnings: runtime.session.startupWarnings }),
+    h(MessagesPane, {
+      messages: runtime.session.messages,
+      expandLongMessages,
+    }),
     approval
       ? h(ApprovalPane, {
           prompt: approval.prompt,
         })
       : null,
-    h(MessagesPane, {
-      messages: runtime.session.messages,
-      expandLongMessages,
-    }),
     h(PromptPane, {
       inputValue,
       onInputChange: updateInputValue,

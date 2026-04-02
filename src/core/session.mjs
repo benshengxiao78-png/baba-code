@@ -65,6 +65,12 @@ export function getStartupWarnings(provider) {
   return warnings;
 }
 
+export function refreshProviderState(session) {
+  session.providerConfigured = isProviderConfigured(session.provider);
+  session.startupWarnings = getStartupWarnings(session.provider);
+  return session;
+}
+
 export function getDefaultSessionConfig() {
   const provider = process.env.REPRO_PROVIDER || 'gemini';
   const model = getDefaultModelForProvider(provider);
